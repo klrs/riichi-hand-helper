@@ -2,6 +2,10 @@
 
 A SPA React app to help you analyze different hands in Riichi mahjong.
 
+## Tiles
+
+Tiles SVG font by konomu! https://konomu.github.io/mahjong-font
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

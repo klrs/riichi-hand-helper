@@ -13,6 +13,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@font-face {
+  font-family: 'Tiles';
+  src: url('/assets/Tiles-Regularv2.1-SVG.otf') format('otf');
+}
+
 a {
   font-weight: 500;
   color: #646cff;
