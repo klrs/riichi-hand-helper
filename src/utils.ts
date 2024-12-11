@@ -11,29 +11,118 @@ export const breakIntoSteps = (hand: Tile[]): number[] => {
 
 type Node = {
     tile: Tile;
-    nextIndex: number | null;
+    setIndexes: number[];
+    runIndexes: number[];
 }
 
 export const nodeify = (hand: Tile[]): Node[] => {
-    return hand.map(tile => ({tile, nextIndex: null}));
+    return hand.map(tile => ({tile, setIndexes: [], runIndexes: []}));
 }
 
-export const breakIntoShapes = (hand: Tile[]) => {
-    const oneRow = hand.filter(tile => tile.number === hand[0].number);
-    if (oneRow.length === 1) {
-        return [[oneRow[0]]];
+type ConnectedHand = {
+    shapes: number[][];
+}
+
+const isIndexPartOfCompleteShape = (index: number, shapes: number[][]) => {
+    return shapes.some(shape => shape.some(i => i === index) && shape.length === 3);
+}
+
+const getShapeIndexIsPartOf = (index: number, shapes: number[][]) => {
+    const s = shapes.filter(shape => shape.some(i => i === index));
+    if (s.length > 1) {
+        console.error("Index part of more than one shape!!");
     }
-    if (oneRow.length === 2) {
-        return [[oneRow[0]], [oneRow[1]], [oneRow[0], oneRow[1]]];
+    if (s.length === 0) {
+        return [];
     }
-    if (oneRow.length === 3) {
-        return [[oneRow[0]], [oneRow[1]], [oneRow[2]], [oneRow[0], oneRow[1]], [oneRow[1], oneRow[2]], [oneRow[0], oneRow[2]], oneRow];
+    return s[0];
+}
+
+const getShapeIndexIndexIsPartOf = (index: number, shapes: number[][]) => {
+    return shapes.findIndex(shape => shape.some(i => i === index));
+}
+
+export const getShapeType = (shape: number[]) => {
+    if (shape.length === 1) {
+        return "float";
     }
-    if (oneRow.length === 4) {
-        return [[oneRow[0]], [oneRow[1]], [oneRow[2]], [oneRow[3]], [oneRow[0], oneRow[1]], [oneRow[1], oneRow[2]], [oneRow[2], oneRow[3]], [oneRow[0], oneRow[2]], [oneRow[1], oneRow[3]], [oneRow[0], oneRow[3]], [oneRow[0], oneRow[1], oneRow[2]], [oneRow[1], oneRow[2], oneRow[3]], [oneRow[0], oneRow[2], oneRow[3]], [oneRow[0], oneRow[1], oneRow[3]], oneRow];
+    const [first, ...rest] = shape;
+    const isRun = rest.reduce((_acc, e, currentIndex) => first + currentIndex + 1 === e, true)
+    return isRun ? "run" : "set";
+}
+
+export const doMoves = (hand: Tile[], shapes: number[][] = [], iteration: number = 0): ConnectedHand[] => {
+
+    if (hand.length === 0) {
+        return [{shapes}];
     }
 
+    const [firstNode, ...rest] = hand;
+    const shapeIndexIsPartOf = getShapeIndexIsPartOf(iteration, shapes);
+    const checkMoves = () => {
+
+        if (shapeIndexIsPartOf.length === 3) {
+            return [];
+        }
+
+        const shapeTypeIndexIsPartOf = getShapeType(shapeIndexIsPartOf);
+        const moves: {type: "stay" | "set" | "run", i: number}[] = [{type: "stay", i: NaN}];
+
+        const set = rest.length !== 0 && rest[0].number === firstNode.number;
+        if (set) {
+            moves.push({
+                type: "set",
+                i: 1
+            })
+        }
+        const run = rest.findIndex(tile => tile.number === firstNode.number + 1);
+        if (run !== -1) {
+            moves.push({
+                type: "run",
+                i: run + 1
+            })
+        }
+        return moves;
+    }
+
+    const moves = checkMoves();
+
+    const connectedHands: ConnectedHand[] = [];
+    if (moves.length === 0) {
+        connectedHands.push(...doMoves(rest, shapes, iteration + 1));
+    }
+    else {
+        for(let i = 0; i < moves.length; i++) {
+            const move = moves[i];
+    
+            if (move.type === "set") {
+                connectedHands.push(...doMoves(rest, [...shapes, [iteration, move.i + iteration]], iteration + 1));
+            }
+            else if (move.type === "run") {
+                if (shapeIndexIsPartOf.length !== 0) {
+                    const shapeIndex = getShapeIndexIndexIsPartOf(i, shapes);
+                    connectedHands.push(...doMoves(
+                        rest, [...shapes.slice(0, shapeIndex), [...shapeIndexIsPartOf, move.i + iteration]], iteration + 1
+                    ));
+                }
+                else {
+                    connectedHands.push(...doMoves(rest, [...shapes, [iteration, move.i + iteration]], iteration + 1));
+                }
+            }
+            else {
+                if (shapeIndexIsPartOf.length !== 0) {
+                    connectedHands.push(...doMoves(rest, shapes, iteration + 1));
+                }
+                else {
+                    connectedHands.push(...doMoves(rest, [...shapes, [iteration]], iteration + 1));
+                }
+            }
+        }
+    }
+    return connectedHands;
+
 }
+
 
 export const connectTiles = (hand: Tile[]) => {
 
