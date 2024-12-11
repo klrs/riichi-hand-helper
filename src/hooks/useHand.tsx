@@ -32,6 +32,9 @@ const initialize = () => {
     }
 }
 
+// todo: kinda slow
+const sortHand = (hand: Tile[]) =>  hand.sort((a, b) => (a.suit + a.number).localeCompare(b.suit + b.number));
+
 export const useHand = () => {
     const [wall, setWall] = useState<Tile[]>([]);
     const [hand, setHand] = useState<Tile[]>([]);
@@ -42,7 +45,7 @@ export const useHand = () => {
 
     const {_wall, _hand} = initialize();
     setWall(_wall);
-    setHand(_hand);
+    setHand(sortHand(_hand));
 
     return {hand, wall};
 }
