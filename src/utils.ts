@@ -1,7 +1,7 @@
 import { Tile } from "./types";
 
 
-export type ShapeType = "run" | "set" | "pair" | "float";
+export type ShapeType = "run" | "proto-run-open" | "proto-run-closed" | "set" | "proto-set" | "pair" | "float";
 
 export type Node = {
     index: number;
@@ -31,16 +31,26 @@ export const doMoves2 = (nodes: Node[], shapes: Shape[] = []): ConnectedHand[] =
     const possibleShapes: Shape[] = [{type: "float", nodes: [firstNode]}];
 
     const setNodes = rest.filter(node => firstNode.tile.number === node.tile.number);
-    if (setNodes.length > 2) {
+    if (setNodes.length > 1) {
         possibleShapes.push({type: "set", nodes: [firstNode, setNodes[0], setNodes[1]]});
     }
 
     if (setNodes.length === 1) {
+        possibleShapes.push({type: "proto-set", nodes: [firstNode, setNodes[0]]});
         possibleShapes.push({type: "pair", nodes: [firstNode, setNodes[0]]});
     }
 
     const protoRunNode = rest.find(node => firstNode.tile.number + 1 === node.tile.number);
     const runNode = rest.find(node => firstNode.tile.number + 2 === node.tile.number);
+
+    if (protoRunNode) {
+        possibleShapes.push({type: "proto-run-open", nodes: [firstNode, protoRunNode]});
+    }
+
+    if (runNode) {
+        possibleShapes.push({type: "proto-run-closed", nodes: [firstNode, runNode]});
+    }
+
     if (protoRunNode && runNode) {
         possibleShapes.push({type: "run", nodes: [firstNode, protoRunNode, runNode]});
     }
@@ -59,4 +69,100 @@ export const doMoves2 = (nodes: Node[], shapes: Shape[] = []): ConnectedHand[] =
     }
 
     return connectedHands;
+}
+
+type ShantenAcc = {
+    hasPair: boolean;
+    melds: number;
+    protoMelds: number;
+}
+
+export const countShanten = (hand: ConnectedHand) => {
+    const shantenAcc = hand.shapes.reduce<ShantenAcc>((acc, shape) => {
+        switch(shape.type) {
+            case "pair":
+                return {
+                    hasPair: true,
+                    melds: acc.melds,
+                    protoMelds: acc.protoMelds,
+                }
+            case "run":
+                return {
+                    hasPair: acc.hasPair,
+                    melds: acc.melds + 1,
+                    protoMelds: acc.protoMelds,
+                }
+            case "set":
+                return {
+                    hasPair: acc.hasPair,
+                    melds: acc.melds + 1,
+                    protoMelds: acc.protoMelds,
+                }
+            case "proto-run-closed":
+            case "proto-run-open":
+            case "proto-set":
+                return {
+                    hasPair: acc.hasPair,
+                    melds: acc.melds,
+                    protoMelds: acc.protoMelds + 1,
+                }
+            default: // float
+                return {
+                    hasPair: acc.hasPair,
+                    melds: acc.melds,
+                    protoMelds: acc.protoMelds,
+                }
+        }
+    }, {hasPair: false, melds: 0, protoMelds: 0});
+
+    if (shantenAcc.melds === 4 && shantenAcc.hasPair) {
+        return -1; // full hand
+    }
+
+    if (shantenAcc.melds === 4 && !shantenAcc.hasPair) {
+        return 0;
+    }
+
+    const shanten = shantenAcc.hasPair ? 0 : 1;
+    if (shantenAcc.melds === 3) {
+        return shantenAcc.protoMelds > 0 ? shanten : shanten + 1;
+    }
+    if (shantenAcc.melds === 2) {
+        if (shantenAcc.protoMelds >= 2) {
+            return shanten + 1;
+        }
+        if (shantenAcc.protoMelds === 1) {
+            return shanten + 2;
+        }
+        return shanten + 3;
+    }
+    if (shantenAcc.melds === 1) {
+        if (shantenAcc.protoMelds >= 3) {
+            return shanten + 2;
+        }
+        if (shantenAcc.protoMelds === 2) {
+            return shanten + 3;
+        }
+        if (shantenAcc.protoMelds === 1) {
+            return shanten + 4;
+        }
+        return shanten + 5;
+    }
+    
+    if (shantenAcc.melds === 0) {
+        if (shantenAcc.protoMelds >= 4) {
+            return shanten + 3;
+        }
+        if (shantenAcc.protoMelds === 3) {
+            return shanten + 4;
+        }
+        if (shantenAcc.protoMelds === 2) {
+            return shanten + 5;
+        }
+        if (shantenAcc.protoMelds === 1) {
+            return shanten + 6;
+        }
+    }
+
+    return shanten + 7;
 }
