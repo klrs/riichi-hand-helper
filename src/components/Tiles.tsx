@@ -1,9 +1,14 @@
 import { FC } from "react";
+import { Tile } from "../types";
 
 type Props = {
-    children: string;
+    children: Tile[];
 }
 
-export const Tiles: FC<Props> = ({children}) => (
-    <p style={{fontFamily: "Tiles", fontSize: "5rem"}}>{children}</p>
-);
+export const Tiles: FC<Props> = ({children}) => {
+    
+    
+    return (
+        <p style={{fontFamily: "Tiles", fontSize: "5rem"}}>{children.map(tile => tile.tileSvg.toString())}</p>
+    )
+};
