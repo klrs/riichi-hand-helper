@@ -1,4 +1,4 @@
-import { Tile } from "./types";
+import { allTiles, Suit, Tile } from "./types";
 
 
 export type ShapeType = "run" | "proto-run-open" | "proto-run-closed" | "set" | "proto-set" | "pair" | "float";
@@ -15,6 +15,10 @@ export type Shape = {
 
 export type ConnectedHand = {
     shapes: Shape[];
+}
+
+export type ConnectedHandEnriched = ConnectedHand & {
+    shanten: number;
 }
 
 export const sortTiles = (tiles: Tile[]): Tile[] => {
@@ -178,4 +182,65 @@ export const countShanten = (hand: ConnectedHand) => {
     }
 
     return shanten + 7;
+}
+
+export const findAcceptableTiles = (connectedHand: ConnectedHand): Tile[] => {
+    return connectedHand.shapes.flatMap(shape => {
+        if (shape.type === "proto-run-closed") {
+            return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 1})];
+        }
+        else if (shape.type === "proto-run-open") {
+            if (shape.nodes[0].tile.number === 1) {
+                return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 2})];
+            }
+            else if (shape.nodes[0].tile.number === 8) {
+                return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number - 1})];
+            }
+            else {
+                return [
+                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number - 1}),
+                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 2})
+                ];
+            }
+        }
+        else if (shape.type === "proto-set" || shape.type === "float") {
+            return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number})];
+        }
+        else {
+            return [];
+        }
+    });
+}
+
+export const t = (props: string | {suit: Suit, number: number}): Tile => {
+    if (typeof props === "string") {
+        const [suitLetter, numberStr] = props.split("");
+        let suit: Suit;
+        const number = parseInt(numberStr);
+        switch (suitLetter) {
+            case "m":
+                suit = Suit.MANZU
+                break;
+            case "p":
+                suit = Suit.PINZU;
+                break;
+            case "s":
+                suit = Suit.SOUZU;
+                break;
+            default:
+                suit = Suit.HONOR;
+        }
+        return {filename: getFilename(suit, number), suit, number};
+    }
+    else {
+        return {filename: getFilename(props.suit, props.number), suit: props.suit, number: props.number};
+    }
+}
+
+const getFilename = (suit: Suit, number: number): string => {
+    const filename = allTiles.find(tile => tile.suit === suit && tile.number === number)?.filename
+    if (!filename) {
+        throw new Error(`Filename not found for suit: ${suit} and number: ${number}`);
+    }
+    return filename;
 }

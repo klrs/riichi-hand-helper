@@ -1,26 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Suit, Tile } from "./types";
-import { countShanten, calculateAllConnections, sortedHandToNodes, sortTiles } from "./utils";
-
-const t = (tile: string): Tile => {
-    const [suitLetter, number] = tile.split("");
-    let suit: Suit;
-    switch (suitLetter) {
-        case "m":
-            suit = Suit.MANZU
-            break;
-        case "p":
-            suit = Suit.PINZU;
-            break;
-        case "s":
-            suit = Suit.SOUZU;
-            break;
-        default:
-            suit = Suit.HONOR;
-    }
-
-    return {filename: "", suit, number: parseInt(number)};
-}
+import { Tile } from "./types";
+import { countShanten, calculateAllConnections, sortedHandToNodes, sortTiles, t } from "./utils";
 
 describe("tile utils", () => {
 

@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { Tile } from "../types";
-import { sortTiles } from "../utils";
 
 type Props = {
     children: Tile[];
