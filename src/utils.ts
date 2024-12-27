@@ -17,9 +17,20 @@ export type ConnectedHand = {
     shapes: Shape[];
 }
 
+export const sortTiles = (tiles: Tile[]): Tile[] => {
+    const suitOrder = { 'manzu': 1, 'pinzu': 2, 'souzu': 3, 'honor': 4 };
+
+    return tiles.sort((a, b) => {
+        if (a.suit === b.suit) {
+            return a.number - b.number;
+        }
+        return suitOrder[a.suit] - suitOrder[b.suit];
+    });
+}
+
 export const sortedHandToNodes = (hand: Tile[]) => hand.map((tile, index) => ({index, tile} as Node));
 
-export const doMoves2 = (nodes: Node[], shapes: Shape[] = []): ConnectedHand[] => {
+export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): ConnectedHand[] => {
     
     if (nodes.length === 0) {
         return [{shapes}];
@@ -62,9 +73,9 @@ export const doMoves2 = (nodes: Node[], shapes: Shape[] = []): ConnectedHand[] =
     const connectedHands: ConnectedHand[] = [];
     for (const shape of possibleShapes) { 
         if (shape.type === "float") {
-            connectedHands.push(...doMoves2(rest, [...shapes, shape]));
+            connectedHands.push(...calculateAllConnections(rest, [...shapes, shape]));
         } else {
-            connectedHands.push(...doMoves2(filterOutNodesInShape(rest, shape), [...shapes, shape]));
+            connectedHands.push(...calculateAllConnections(filterOutNodesInShape(rest, shape), [...shapes, shape]));
         }
     }
 

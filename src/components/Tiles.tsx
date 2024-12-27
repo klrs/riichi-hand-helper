@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Tile } from "../types";
+import { sortTiles } from "../utils";
 
 type Props = {
     children: Tile[];
@@ -9,7 +10,7 @@ type Props = {
 export const Tiles: FC<Props> = ({children}) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {children.map(tile => (
+            {sortTiles(children).map(tile => (
                 <div 
                     key={`${tile.suit}-${tile.number}`} 
                     style={{ 
