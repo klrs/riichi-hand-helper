@@ -26,7 +26,7 @@ describe("tile utils", () => {
 
     it("should sort tiles by suit and number in ascending order", () => {
         const tiles: Tile[] = [
-            t("1"), // Shaa
+            t("h1"), // Shaa
             t("s9"),
             t("s9"),
             t("p2"),
@@ -34,7 +34,7 @@ describe("tile utils", () => {
             t("p1"),
             t("s1"),
             t("m2"),
-            t("2"), // Pei
+            t("h2"), // Pei
         ];
 
         const sortedTiles = sortTiles(tiles);
@@ -47,17 +47,35 @@ describe("tile utils", () => {
             t("s1"),
             t("s9"),
             t("s9"),
-            t("1"), // Shaa
-            t("2"), // Pei
+            t("h1"), // Shaa
+            t("h2"), // Pei
         ]);
     });
 
-  it.skip("should break into steps", () => {
+  it("should break into steps", () => {
+        // all souzu
+        // const tiles: Tile[] = [
+        //     t("s1"), t("s1"), t("s1"), t("s2"), t("s3"), t("s5"), t("s5"), t("s6"), t("s6"), t("s9"), t("s9"), t("s9"), t("s9")
+        // ]
+
+        // different suits and honors
         const tiles: Tile[] = [
-            t("s1"), t("s1"), t("s1"), t("s2"), t("s3"), t("s5"), t("s5"), t("s6"), t("s6"), t("s9"), t("s9"), t("s9"), t("s9")
+            t("h1"), // Shaa
+            t("s9"),
+            t("s9"),
+            t("p2"),
+            t("m1"),
+            t("p1"),
+            t("s1"),
+            t("m2"),
+            t("h2"), // Pei
+            t("m3"),
+            t("m3"),
+            t("m3"),
+            t("m4"),
         ]
 
-        const hands = calculateAllConnections(sortedHandToNodes(tiles));
+        const hands = calculateAllConnections(sortedHandToNodes(sortTiles(tiles)));
         const handsWithShanten = hands.map(hand => ({...hand, shanten: countShanten(hand)}));
 
         handsWithShanten.sort((a, b) => a.shanten - b.shanten).slice(0, 20).forEach((hand, i) => {

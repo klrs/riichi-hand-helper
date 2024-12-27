@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { allTiles, Tile } from "../types";
+import { calculateAllConnections, ConnectedHand, countShanten, Shape, sortedHandToNodes } from "../utils";
 
 const shuffleArray = (array: Tile[]) => {
     for (let i = array.length - 1; i >= 0; i--) {
@@ -39,13 +40,22 @@ export const useHand = () => {
     const [wall, setWall] = useState<Tile[]>([]);
     const [hand, setHand] = useState<Tile[]>([]);
 
+    const [shanten, setShanten] = useState<number>(NaN);
+    const [shantenShapes, setShantenShapes] = useState<ConnectedHand[]>([]);
+
     if (hand.length !== 0) {
-        return {hand, wall};
+        return {hand, wall, shanten, shantenShapes};
     }
 
     const {_wall, _hand} = initialize();
     setWall(_wall);
     setHand(sortHand(_hand));
 
-    return {hand, wall};
+    const hands = calculateAllConnections(sortedHandToNodes(_hand));
+    const handsWithShanten = hands.map(hand => ({...hand, shanten: countShanten(hand)})).sort((a, b) => a.shanten - b.shanten);
+    const _lowestShantenHands = handsWithShanten.slice(0, handsWithShanten.findIndex(hand => hand.shanten !== handsWithShanten[0].shanten));
+    setShanten(handsWithShanten[0].shanten);
+    setShantenShapes(_lowestShantenHands);
+
+    return {hand, wall, shanten, shantenShapes};
 }

@@ -4,11 +4,14 @@ import { useHand } from './hooks/useHand'
 
 function App() {
 
-  const {hand} = useHand();
+  const {hand, shanten} = useHand();
 
   return (
     <>
       <Tiles>{hand}</Tiles>
+      <div>
+        <h2>Shanten: {shanten}</h2>
+      </div>
     </>
   )
 }

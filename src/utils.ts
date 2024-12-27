@@ -41,7 +41,7 @@ export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): Co
     ////// possible shapes ///////
     const possibleShapes: Shape[] = [{type: "float", nodes: [firstNode]}];
 
-    const setNodes = rest.filter(node => firstNode.tile.number === node.tile.number);
+    const setNodes = rest.filter(node => firstNode.tile.suit === node.tile.suit && firstNode.tile.number === node.tile.number);
     if (setNodes.length > 1) {
         possibleShapes.push({type: "set", nodes: [firstNode, setNodes[0], setNodes[1]]});
     }
@@ -51,8 +51,10 @@ export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): Co
         possibleShapes.push({type: "pair", nodes: [firstNode, setNodes[0]]});
     }
 
-    const protoRunNode = rest.find(node => firstNode.tile.number + 1 === node.tile.number);
-    const runNode = rest.find(node => firstNode.tile.number + 2 === node.tile.number);
+    const protoRunNode = firstNode.tile.suit !== "honor" &&
+        rest.find(node => firstNode.tile.suit === node.tile.suit && firstNode.tile.number + 1 === node.tile.number);
+    const runNode = firstNode.tile.suit !== "honor" &&
+        rest.find(node => firstNode.tile.suit === node.tile.suit && firstNode.tile.number + 2 === node.tile.number);
 
     if (protoRunNode) {
         possibleShapes.push({type: "proto-run-open", nodes: [firstNode, protoRunNode]});
