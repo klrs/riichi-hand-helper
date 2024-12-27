@@ -52,7 +52,7 @@ describe("tile utils", () => {
         ]);
     });
 
-  it("should break into steps", () => {
+  it("should find shanten of a hand", () => {
         // all souzu
         // const tiles: Tile[] = [
         //     t("s1"), t("s1"), t("s1"), t("s2"), t("s3"), t("s5"), t("s5"), t("s6"), t("s6"), t("s9"), t("s9"), t("s9"), t("s9")
@@ -60,19 +60,19 @@ describe("tile utils", () => {
 
         // different suits and honors
         const tiles: Tile[] = [
-            t("h1"), // Shaa
-            t("s9"),
-            t("s9"),
-            t("p2"),
             t("m1"),
-            t("p1"),
-            t("s1"),
-            t("m2"),
-            t("h2"), // Pei
-            t("m3"),
             t("m3"),
             t("m3"),
             t("m4"),
+            t("m8"),
+            t("p1"),
+            t("p1"),
+            t("p5"),
+            t("s7"), // Pei
+            t("h1"), // Ton
+            t("h3"), // Shaa
+            t("h5"), // Haku
+            t("h6"), // Hatsu
         ]
 
         const hands = calculateAllConnections(sortedHandToNodes(sortTiles(tiles)));

@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       <Tiles>{hand}</Tiles>
-      <div>
+      <div style={{ width: "100%", display: "flex", justifyContent: "flex-start" }}>
         <h2>Shanten: {shanten}</h2>
       </div>
     </>

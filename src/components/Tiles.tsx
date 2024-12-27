@@ -10,7 +10,7 @@ type Props = {
 export const Tiles: FC<Props> = ({children}) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {sortTiles(children).map(tile => (
+            {children.map(tile => (
                 <div 
                     key={`${tile.suit}-${tile.number}`} 
                     style={{ 
