@@ -1,7 +1,7 @@
 import { allTiles, Suit, Tile } from "./types";
 
 
-export type ShapeType = "run" | "proto-run-open" | "proto-run-closed" | "set" | "proto-set" | "pair" | "float";
+export type ShapeType = "run" | "proto-run-open" | "proto-run-closed" | "set" | "pair" | "float";
 
 export type Node = {
     index: number;
@@ -53,7 +53,6 @@ export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): Co
     }
 
     if (setNodes.length === 1) {
-        possibleShapes.push({type: "proto-set", nodes: [firstNode, setNodes[0]]});
         possibleShapes.push({type: "pair", nodes: [firstNode, setNodes[0]]});
     }
 
@@ -91,7 +90,7 @@ export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): Co
 }
 
 type ShantenAcc = {
-    hasPair: boolean;
+    pairs: number;
     melds: number;
     protoMelds: number;
 }
@@ -101,84 +100,89 @@ export const countShanten = (hand: ConnectedHand) => {
         switch(shape.type) {
             case "pair":
                 return {
-                    hasPair: true,
+                    pairs: acc.pairs + 1,
                     melds: acc.melds,
                     protoMelds: acc.protoMelds,
                 }
             case "run":
                 return {
-                    hasPair: acc.hasPair,
+                    pairs: acc.pairs,
                     melds: acc.melds + 1,
                     protoMelds: acc.protoMelds,
                 }
             case "set":
                 return {
-                    hasPair: acc.hasPair,
+                    pairs: acc.pairs,
                     melds: acc.melds + 1,
                     protoMelds: acc.protoMelds,
                 }
             case "proto-run-closed":
             case "proto-run-open":
-            case "proto-set":
                 return {
-                    hasPair: acc.hasPair,
+                    pairs: acc.pairs,
                     melds: acc.melds,
                     protoMelds: acc.protoMelds + 1,
                 }
             default: // float
                 return {
-                    hasPair: acc.hasPair,
+                    pairs: acc.pairs,
                     melds: acc.melds,
                     protoMelds: acc.protoMelds,
                 }
         }
-    }, {hasPair: false, melds: 0, protoMelds: 0});
+    }, {pairs: 0, melds: 0, protoMelds: 0});
 
-    if (shantenAcc.melds === 4 && shantenAcc.hasPair) {
+    if (shantenAcc.melds === 4 && shantenAcc.pairs === 1) {
         return -1; // full hand
     }
 
-    if (shantenAcc.melds === 4 && !shantenAcc.hasPair) {
+    if (shantenAcc.melds === 4 && shantenAcc.pairs === 0) {
         return 0;
     }
 
-    const shanten = shantenAcc.hasPair ? 0 : 1;
+    const hasPair = shantenAcc.pairs > 0;
+
+    // let's consider "redundant pairs" as proto melds
+    const protoMelds = shantenAcc.protoMelds + (hasPair ? shantenAcc.pairs - 1 : 0);
+
+    const shanten = hasPair ? 0 : 1;
+    
     if (shantenAcc.melds === 3) {
-        return shantenAcc.protoMelds > 0 ? shanten : shanten + 1;
+        return protoMelds > 0 ? shanten : shanten + 1;
     }
     if (shantenAcc.melds === 2) {
-        if (shantenAcc.protoMelds >= 2) {
+        if (protoMelds >= 2) {
             return shanten + 1;
         }
-        if (shantenAcc.protoMelds === 1) {
+        if (protoMelds === 1) {
             return shanten + 2;
         }
         return shanten + 3;
     }
     if (shantenAcc.melds === 1) {
-        if (shantenAcc.protoMelds >= 3) {
+        if (protoMelds >= 3) {
             return shanten + 2;
         }
-        if (shantenAcc.protoMelds === 2) {
+        if (protoMelds === 2) {
             return shanten + 3;
         }
-        if (shantenAcc.protoMelds === 1) {
+        if (protoMelds === 1) {
             return shanten + 4;
         }
         return shanten + 5;
     }
     
     if (shantenAcc.melds === 0) {
-        if (shantenAcc.protoMelds >= 4) {
+        if (protoMelds >= 4) {
             return shanten + 3;
         }
-        if (shantenAcc.protoMelds === 3) {
+        if (protoMelds === 3) {
             return shanten + 4;
         }
-        if (shantenAcc.protoMelds === 2) {
+        if (protoMelds === 2) {
             return shanten + 5;
         }
-        if (shantenAcc.protoMelds === 1) {
+        if (protoMelds === 1) {
             return shanten + 6;
         }
     }
