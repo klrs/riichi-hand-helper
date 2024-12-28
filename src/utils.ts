@@ -43,7 +43,9 @@ export const calculateAllConnections = (nodes: Node[], shapes: Shape[] = []): Co
     const [ firstNode, ...rest ] = nodes;
 
     ////// possible shapes ///////
-    const possibleShapes: Shape[] = [{type: "float", nodes: [firstNode]}];
+    const possibleShapes: Shape[] = [
+        {type: "float", nodes: [firstNode]}
+    ];
 
     const setNodes = rest.filter(node => firstNode.tile.suit === node.tile.suit && firstNode.tile.number === node.tile.number);
     if (setNodes.length > 1) {
@@ -203,8 +205,31 @@ export const findAcceptableTiles = (connectedHand: ConnectedHand): Tile[] => {
                 ];
             }
         }
-        else if (shape.type === "proto-set" || shape.type === "float") {
+        else if (shape.type === "proto-set") {
             return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number})];
+        }
+        else if (shape.type === "float") {
+            const countOfMeldsOrProtoMelds = connectedHand.shapes.filter(shape =>
+                shape.type === "run" ||
+                shape.type === "set" ||
+                shape.type === "proto-run-closed" ||
+                shape.type === "proto-run-open" ||
+                shape.type === "proto-set").length;
+
+            if (countOfMeldsOrProtoMelds >= 4) {
+                return [
+                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number}),
+                ];
+            }
+            else {
+                return [
+                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number}),
+                    t({suit: shape.nodes[0].tile.suit, number: Math.max(9, shape.nodes[0].tile.number + 1)}),
+                    t({suit: shape.nodes[0].tile.suit, number: Math.max(9, shape.nodes[0].tile.number + 2)}),
+                    t({suit: shape.nodes[0].tile.suit, number: Math.min(1, shape.nodes[0].tile.number -1 )}),
+                    t({suit: shape.nodes[0].tile.suit, number: Math.min(1, shape.nodes[0].tile.number - 2)}),
+                ];
+            }
         }
         else {
             return [];
