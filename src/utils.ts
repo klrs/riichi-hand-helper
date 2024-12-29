@@ -1,3 +1,4 @@
+import { shantenIncrementTableFor13TileHand } from "./shantenIncrementTable";
 import { allTiles, Suit, Tile } from "./types";
 
 
@@ -123,7 +124,7 @@ export const countShanten = (hand: ConnectedHand) => {
                     melds: acc.melds,
                     protoMelds: acc.protoMelds + 1,
                 }
-            default: // float
+            case "float":
                 return {
                     pairs: acc.pairs,
                     melds: acc.melds,
@@ -146,7 +147,7 @@ export const countShanten = (hand: ConnectedHand) => {
     const protoMelds = shantenAcc.protoMelds + (hasPair ? shantenAcc.pairs - 1 : 0);
 
     const shanten = hasPair ? 0 : 1;
-    
+
     if (shantenAcc.melds === 3) {
         return protoMelds > 0 ? shanten : shanten + 1;
     }
@@ -191,58 +192,100 @@ export const countShanten = (hand: ConnectedHand) => {
 }
 
 export const findAcceptableTiles = (connectedHand: ConnectedHand): Tile[] => {
-    return connectedHand.shapes.flatMap(shape => {
-        if (shape.type === "proto-run-closed") {
-            return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 1})];
-        }
-        else if (shape.type === "proto-run-open") {
-            if (shape.nodes[0].tile.number === 1) {
-                return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 2})];
-            }
-            else if (shape.nodes[0].tile.number === 8) {
-                return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number - 1})];
-            }
-            else {
-                return [
-                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number - 1}),
-                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number + 2})
-                ];
-            }
-        }
-        else if (shape.type === "proto-set") {
-            return [t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number})];
-        }
-        else if (shape.type === "float") {
-            const countOfMeldsOrProtoMelds = connectedHand.shapes.filter(shape =>
-                shape.type === "run" ||
-                shape.type === "set" ||
-                shape.type === "proto-run-closed" ||
-                shape.type === "proto-run-open" ||
-                shape.type === "proto-set").length;
 
-            if (countOfMeldsOrProtoMelds >= 4) {
-                return [
-                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number}),
-                ];
+    const melds = connectedHand.shapes.filter(shape => shape.type === "run" || shape.type === "set");
+    const pairs = connectedHand.shapes.filter(shape => shape.type === "pair");
+    const protoRuns = connectedHand.shapes.filter(shape => shape.type === "proto-run-closed" || shape.type === "proto-run-open");
+
+    const meldPairProtoRunArray = [melds.length, pairs.length, protoRuns.length];
+
+    const neededShapes = shantenIncrementTableFor13TileHand[JSON.stringify(meldPairProtoRunArray)];
+    if (neededShapes.length === 0) {
+        throw new Error(`Shanten increment table does not have entry for ${JSON.stringify(meldPairProtoRunArray)}`);
+    }
+
+    const floats = connectedHand.shapes.filter(shape => shape.type === "float");
+
+    const acceptableTiles: Tile[] = [];
+
+    if (neededShapes.includes("pair")) {
+        acceptableTiles.push(...floats.flatMap(float => float.nodes.filter(node => !!node).map(node => node.tile)));
+        acceptableTiles.push(...protoRuns.flatMap(protoRun => protoRun.nodes.filter(node => !!node).map(node => node.tile)));
+    }
+
+    if (neededShapes.includes("set")) {
+        acceptableTiles.push(...pairs.flatMap(pair => {
+            const firstTile = pair.nodes[0].tile;
+            return [t({suit: firstTile.suit, number: firstTile.number})];
+        }));
+    }
+
+    if (neededShapes.includes("protorun")) {
+        acceptableTiles.push(...floats.flatMap(float => {
+            const firstTile = float.nodes[0].tile;
+            if (firstTile.number === 1) {
+                return [t({suit: firstTile.suit, number: firstTile.number + 1})];
+            }
+            else if (firstTile.number === 9) {
+                return [t({suit: firstTile.suit, number: firstTile.number - 1})];
             }
             else {
                 return [
-                    t({suit: shape.nodes[0].tile.suit, number: shape.nodes[0].tile.number}),
-                    t({suit: shape.nodes[0].tile.suit, number: Math.max(9, shape.nodes[0].tile.number + 1)}),
-                    t({suit: shape.nodes[0].tile.suit, number: Math.max(9, shape.nodes[0].tile.number + 2)}),
-                    t({suit: shape.nodes[0].tile.suit, number: Math.min(1, shape.nodes[0].tile.number -1 )}),
-                    t({suit: shape.nodes[0].tile.suit, number: Math.min(1, shape.nodes[0].tile.number - 2)}),
+                    t({suit: firstTile.suit, number: firstTile.number - 1}),
+                    t({suit: firstTile.suit, number: firstTile.number + 1})
                 ];
             }
-        }
-        else {
-            return [];
-        }
-    });
+        }));
+    }
+
+    if (neededShapes.includes("run")) {
+        acceptableTiles.push(...protoRuns.flatMap(protoRun => {
+            const firstTile = protoRun.nodes[0].tile;
+            switch (protoRun.type) {
+                case "proto-run-closed":
+                    return [t({suit: firstTile.suit, number: firstTile.number + 1})];
+                case "proto-run-open":
+                    if (firstTile.number === 1) {
+                        return [t({suit: firstTile.suit, number: firstTile.number + 2})];
+                    }
+                    else if (firstTile.number === 8) {
+                        return [t({suit: firstTile.suit, number: firstTile.number - 1})];
+                    }
+                    else {
+                        return [
+                            t({suit: firstTile.suit, number: firstTile.number - 1}),
+                            t({suit: firstTile.suit, number: firstTile.number + 2})
+                        ];
+                    }
+                default:
+                    throw new Error("Unexpected proto run type");
+            }
+        }));
+    }
+    
+    return acceptableTiles;
 }
 
 export const t = (props: string | {suit: Suit, number: number}): Tile => {
     if (typeof props === "string") {
+
+        switch (props) {
+            case "haku":
+                return {filename: getFilename(Suit.HONOR, 5), suit: Suit.HONOR, number: 5};
+            case "hatsu":
+                return {filename: getFilename(Suit.HONOR, 6), suit: Suit.HONOR, number: 6};
+            case "chun":
+                return {filename: getFilename(Suit.HONOR, 7), suit: Suit.HONOR, number: 7};
+            case "ton":
+                return {filename: getFilename(Suit.HONOR, 1), suit: Suit.HONOR, number: 1};
+            case "nan":
+                return {filename: getFilename(Suit.HONOR, 2), suit: Suit.HONOR, number: 2};
+            case "sha":
+                return {filename: getFilename(Suit.HONOR, 3), suit: Suit.HONOR, number: 3};
+            case "pei":
+                return {filename: getFilename(Suit.HONOR, 4), suit: Suit.HONOR, number: 4};
+        }
+
         const [suitLetter, numberStr] = props.split("");
         let suit: Suit;
         const number = parseInt(numberStr);
