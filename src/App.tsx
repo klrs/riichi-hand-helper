@@ -4,13 +4,17 @@ import { useHand } from './hooks/useHand'
 
 function App() {
 
-  const {hand, shanten} = useHand();
+  const {hand, shanten, tileAcceptance} = useHand();
 
   return (
     <>
-      <Tiles>{hand}</Tiles>
-      <div style={{ width: "100%", display: "flex", justifyContent: "flex-start" }}>
+      <Tiles tiles={hand}/>
+      <div style={{ width: "100%", display: "flex", justifyContent: "flex-start", flexDirection: "column"}}>
         <h2>Shanten: {shanten}</h2>
+        <div style={{ display: "flex" }}>
+          <h2>Tile acceptance:</h2>
+          <Tiles tiles={tileAcceptance} size='small'/>
+        </div>
       </div>
     </>
   )

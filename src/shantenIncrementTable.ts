@@ -5,7 +5,9 @@ export type ShantenIncrementType = "pair" | "protorun" | "run" | "set";
 export type ShantenIncrementTable = {
   [key: string]: ShantenIncrementType[];
 };
-// melds, pairs, protoRuns
+
+// this table tells what shapes will raise the shanten count of a hand
+// table key is in format [melds, pairs, protoRuns]
 export const shantenIncrementTableFor13TileHand: ShantenIncrementTable = {
   "[4,0,0]": ["pair"],
   "[3,0,0]": ["pair", "protorun"],

@@ -223,6 +223,11 @@ export const findAcceptableTiles = (connectedHand: ConnectedHand): Tile[] => {
     if (neededShapes.includes("protorun")) {
         acceptableTiles.push(...floats.flatMap(float => {
             const firstTile = float.nodes[0].tile;
+
+            if (firstTile.suit === "honor") {
+                return [];
+            }
+
             if (firstTile.number === 1) {
                 return [t({suit: firstTile.suit, number: firstTile.number + 1})];
             }
@@ -241,6 +246,11 @@ export const findAcceptableTiles = (connectedHand: ConnectedHand): Tile[] => {
     if (neededShapes.includes("run")) {
         acceptableTiles.push(...protoRuns.flatMap(protoRun => {
             const firstTile = protoRun.nodes[0].tile;
+
+            if (firstTile.suit === "honor") {
+                return [];
+            }
+            
             switch (protoRun.type) {
                 case "proto-run-closed":
                     return [t({suit: firstTile.suit, number: firstTile.number + 1})];
@@ -312,7 +322,7 @@ export const t = (props: string | {suit: Suit, number: number}): Tile => {
 const getFilename = (suit: Suit, number: number): string => {
     const filename = allTiles.find(tile => tile.suit === suit && tile.number === number)?.filename
     if (!filename) {
-        throw new Error(`Filename not found for suit: ${suit} and number: ${number}`);
+        return "Blank.svg";
     }
     return filename;
 }
