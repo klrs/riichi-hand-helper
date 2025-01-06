@@ -10,6 +10,7 @@ export type Tile = {
     filename: string;
     suit: Suit;
     number: number;
+    key: string;
 }
 
 export const allTiles = [

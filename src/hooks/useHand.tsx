@@ -13,7 +13,8 @@ const initialize = () => {
     const tempWall = [];
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 4; j++) {
-            tempWall.push(allTiles[i]);
+            const {suit, number} = allTiles[i];
+            tempWall.push({...allTiles[i], key: suit.toString() + number.toString() + j.toString()});
         }
     }
     shuffleArray(tempWall);
