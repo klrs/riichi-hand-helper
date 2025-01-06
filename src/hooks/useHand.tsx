@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { allTiles, Tile } from "../types";
-import { calculateAllConnections, ConnectedHand, countShanten, Shape, sortedHandToNodes, sortTiles } from "../utils";
+import { calculateAllConnections, ConnectedHand, countShanten, findAcceptableTiles, sortedHandToNodes, sortTiles } from "../utils";
 
 const shuffleArray = (array: Tile[]) => {
     for (let i = array.length - 1; i >= 0; i--) {
@@ -40,8 +40,10 @@ export const useHand = () => {
     const [shanten, setShanten] = useState<number>(NaN);
     const [shantenConnectedHands, setShantenConnectedHands] = useState<ConnectedHand[]>([]);
 
+    const [tileAcceptance, setTileAcceptance] = useState<Tile[]>([]);
+
     if (hand.length !== 0) {
-        return {hand, wall, shanten, shantenConnectedHands};
+        return {hand, wall, shanten, shantenConnectedHands, tileAcceptance};
     }
 
     const {_wall, _hand} = initialize();
@@ -51,10 +53,19 @@ export const useHand = () => {
     const handsWithShanten = hands.map(hand => ({...hand, shanten: countShanten(hand)})).sort((a, b) => a.shanten - b.shanten);
     const _lowestShantenHands = handsWithShanten.slice(0, handsWithShanten.findIndex(hand => hand.shanten !== handsWithShanten[0].shanten));
     
+    const _tileAcceptance = sortTiles(_lowestShantenHands.flatMap(hand => findAcceptableTiles(hand)).reduce<Tile[]>((acc, tile) => {
+        if (!acc.find(t => t.suit === tile.suit && t.number === tile.number)) {
+            acc.push(tile);
+        }
+        return acc
+    }, []));
+        
+
     setWall(_wall);
     setHand(sortedHand);
     setShanten(handsWithShanten[0].shanten);
     setShantenConnectedHands(_lowestShantenHands); 
+    setTileAcceptance(_tileAcceptance);
 
-    return {hand, wall, shanten, shantenConnectedHands};
+    return {hand, wall, shanten, shantenConnectedHands, tileAcceptance};
 }

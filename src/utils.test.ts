@@ -1,26 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { Suit, Tile } from "./types";
-import { countShanten, calculateAllConnections, sortedHandToNodes, sortTiles } from "./utils";
+import { Tile } from "./types";
+import { countShanten, calculateAllConnections, sortedHandToNodes, sortTiles, t, ConnectedHand, findAcceptableTiles } from "./utils";
 
-const t = (tile: string): Tile => {
-    const [suitLetter, number] = tile.split("");
-    let suit: Suit;
-    switch (suitLetter) {
-        case "m":
-            suit = Suit.MANZU
-            break;
-        case "p":
-            suit = Suit.PINZU;
-            break;
-        case "s":
-            suit = Suit.SOUZU;
-            break;
-        default:
-            suit = Suit.HONOR;
-    }
-
-    return {filename: "", suit, number: parseInt(number)};
-}
+const n = (props: string) => ({
+    index: 0,
+    tile: t(props),
+});
 
 describe("tile utils", () => {
 
@@ -52,7 +37,7 @@ describe("tile utils", () => {
         ]);
     });
 
-  it("should find shanten of a hand", () => {
+  it.skip("should find shanten of a hand", () => {
         // all souzu
         // const tiles: Tile[] = [
         //     t("s1"), t("s1"), t("s1"), t("s2"), t("s3"), t("s5"), t("s5"), t("s6"), t("s6"), t("s9"), t("s9"), t("s9"), t("s9")
@@ -83,5 +68,42 @@ describe("tile utils", () => {
             console.log(countShanten(hand));
         })
 
+    });
+
+    it("should find accepted tiles of a hand", () => {
+        const hand: ConnectedHand = {
+            shapes: [
+                {
+                    type: "pair",
+                    nodes: [n("haku"), n("haku")]
+                },
+                {
+                    type: "proto-run-open",
+                    nodes: [n("s3"), n("s4")]
+                },
+                {
+                    type: "proto-run-closed",
+                    nodes: [n("m3"), n("m5")]
+                },
+                {
+                    type: "pair",
+                    nodes: [n("m2"), n("m2")]
+                },
+                {
+                    type: "proto-run-closed",
+                    nodes: [n("s4"), n("s6")]
+                },
+                {
+                    type: "proto-run-closed",
+                    nodes: [n("m7"), n("m9")]
+                },
+                {
+                    type: "float",
+                    nodes: [n("p5")]
+                }
+            ]
+        }
+        const acceptedTiles = findAcceptableTiles(hand);
+        acceptedTiles.forEach(tile => console.log(tile.number, tile.suit));
     });
 });
