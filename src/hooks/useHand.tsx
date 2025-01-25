@@ -60,7 +60,19 @@ export const useHand = () => {
         }
         return acc
     }, []));
-        
+
+    const swapTiles = (tile1: Tile, tile2: Tile) => {
+        const newHand = hand.map(tile => {
+            if (tile.key === tile1.key) {
+                return tile2;
+            }
+            if (tile.key === tile2.key) {
+                return tile1;
+            }
+            return tile;
+        });
+        setHand(newHand);
+    }
 
     setWall(_wall);
     setHand(sortedHand);
