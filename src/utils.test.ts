@@ -63,7 +63,7 @@ describe("tile utils", () => {
         const hands = calculateAllConnections(sortedHandToNodes(sortTiles(tiles)));
         const handsWithShanten = hands.map(hand => ({...hand, shanten: countShanten(hand)}));
 
-        handsWithShanten.sort((a, b) => a.shanten - b.shanten).slice(0, 20).forEach((hand, i) => {
+        handsWithShanten.sort((a, b) => a.shanten - b.shanten).slice(0, 20).forEach((hand) => {
             console.log(hand.shapes.map(shape => shape.nodes.map(node => node?.tile.number)))
             console.log(countShanten(hand));
         })
