@@ -16,7 +16,7 @@ export const Tile: FC<Props> = ({tile, size = "medium"}) => (
         }}
     >
         <img 
-            src={`/src/assets/tiles/Front.svg`} 
+            src={`tiles/Front.svg`} 
             style={{ 
                 position: 'absolute', 
                 inset: 0,
@@ -25,7 +25,7 @@ export const Tile: FC<Props> = ({tile, size = "medium"}) => (
             }}
         />
         <img 
-            src={`/src/assets/tiles/${tile.filename}`} 
+            src={`tiles/${tile.filename}`} 
             alt={`${tile.suit} ${tile.number}`} 
             style={{ 
                 position: 'absolute', 
